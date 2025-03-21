@@ -7,6 +7,7 @@
 Esta es una **biblioteca en C++** para gestionar versiones de archivos utilizando un sistema de versionado similar a Git. Actualmente, la biblioteca permite **crear, abrir, escribir, leer y cerrar archivos**, almacenándolos en la carpeta `storage/`.
 
 ## 🚀 Características Actuales
+
 ✅ **Manejo de archivos:** Crear, abrir, leer, escribir y cerrar archivos.  
 ✅ **Sistema de almacenamiento:** Todos los archivos se guardan en `storage/`.  
 ✅ **Pruebas unitarias:** Se han implementado tests para validar las funciones básicas.  
@@ -15,18 +16,27 @@ Esta es una **biblioteca en C++** para gestionar versiones de archivos utilizand
 ## 📌 Cómo Usar la Biblioteca
 
 ### 1️⃣ **Compilar la Biblioteca****
+
 Ejecuta el siguiente comando para compilar la biblioteca y los archivos de prueba:
+
 ```bash
 make
 ```
+
 ### 2️⃣ **Ejecutar Pruebas**  
+
 Después de compilar, puedes probar las funciones con:
+
 ```bash
 ./test_functions
 ```
+
 ### 3️⃣ **Uso en Código**  
+
 Ejemplo de uso en C++:
+
 ```cpp
+
 #include "Versioning.h"
 
 int main() {
@@ -41,10 +51,11 @@ int main() {
     return 0;
 }
 ```
+
 ## 📅 Próximas Tareas (To-Do)
+
 🔹 **Implementar el sistema de versiones completo** (guardar múltiples versiones de archivos).  
 🔹 **Agregar la función `commit()`** para almacenar nuevas versiones.  
 🔹 **Desarrollar `listVersions()`** para mostrar el historial de versiones.  
 🔹 **Implementar `checkout(version)`** para restaurar versiones anteriores.  
 🔹 **Optimizar para guardar solo los cambios entre versiones en lugar de archivos completos.**  
-
