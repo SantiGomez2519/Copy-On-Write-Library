@@ -1,0 +1,25 @@
+# Ignorar archivos binarios y compilados
+*.o
+*.a
+*.out
+*.exe
+*.log
+
+# Ignorar ejecutables generados
+test_functions
+test_versioning
+
+# Ignorar bibliotecas compiladas
+libversioning.a
+
+# Ignorar archivos temporales de editores
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.DS_Store
+
+# Ignorar directorios de pruebas y almacenamiento
+storage/
+versions/
