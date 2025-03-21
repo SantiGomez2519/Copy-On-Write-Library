@@ -7,7 +7,7 @@ int main() {
     versionSystem.create("juanes.txt");
     versionSystem.open("juanes.txt");
     versionSystem.write("Juanes te saluda");
-    versionSystem.read()
+    versionSystem.read();
     versionSystem.close();
 
     return 0;
