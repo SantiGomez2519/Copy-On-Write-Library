@@ -1,50 +1,52 @@
+// file_manager.h
 #ifndef FILE_MANAGER_H
 #define FILE_MANAGER_H
 
 #include <string>
 #include <vector>
+#include <memory>
+#include <unordered_map>
+#include <set>
 
-// Estructura para representar una versión del archivo
-struct Version {
-    size_t version_id;
-    size_t offset;
-    size_t size;
-
-    // Constructor por defecto
-    Version() : version_id(0), offset(0), size(0) {}
-
-    // Constructor para inicializar correctamente
-    Version(size_t id, size_t off, size_t sz) : version_id(id), offset(off), size(sz) {}
-};
-
-// Estructura para representar un bloque de datos modificados
-struct DataBlock {
-    size_t version_id;
-    size_t offset;
-    size_t size;
-
-    // Constructor por defecto
-    DataBlock() : version_id(0), offset(0), size(0) {}
-
-    // Constructor para inicializar correctamente
-    DataBlock(size_t ver, size_t off, size_t sz) : version_id(ver), offset(off), size(sz) {}
-};
-
-// Estructura para manejar el archivo y sus versiones
-struct FileMetadata {
-    std::string filename;   // Nombre del archivo base
-    size_t total_versions;  // Número total de versiones
-    std::vector<Version> versions;  // Historial de versiones
-};
-
-// Funciones para manejar archivos versionados
 namespace VersionedStorage {
+    // Tamaño de bloque fijo
+    constexpr size_t BLOCK_SIZE = 4096;
+
+    struct DataBlock {
+        size_t block_id;
+        std::vector<char> data;
+        std::set<size_t> referencing_versions;
+        
+        DataBlock(size_t id, const char* block_data, size_t size) 
+            : block_id(id), data(block_data, block_data + size) {}
+    };
+
+    struct VersionMetadata {
+        size_t version_id;
+        std::unordered_map<size_t, std::shared_ptr<DataBlock>> blocks;
+        size_t file_size;
+        
+        VersionMetadata(size_t id) : version_id(id), file_size(0) {}
+    };
+
+    struct FileMetadata {
+        std::string filename;
+        size_t current_version;
+        std::unordered_map<size_t, std::shared_ptr<VersionMetadata>> versions;
+        std::unordered_map<size_t, std::shared_ptr<DataBlock>> all_blocks;
+        
+        FileMetadata(const std::string& name) : filename(name), current_version(0) {
+            versions[0] = std::make_shared<VersionMetadata>(0);
+        }
+    };
+
+    // Declaraciones de funciones
     bool create(const std::string& filename);
-    bool open(const std::string& filename);
-    bool write(const std::string& filename);
-    bool read(const std::string& filename, size_t version_id, std::string& output);
-    bool close(const std::string& filename);
+    bool open(const std::string& filename, FileMetadata& meta);
+    bool write(const std::string& filename, FileMetadata& meta, const char* data, size_t size);
+    bool read(const FileMetadata& meta, size_t version_id, std::string& output);
+    bool close(FileMetadata& meta);
+    bool snapshot(const FileMetadata& meta, size_t version_to_clone);
 }
 
 #endif // FILE_MANAGER_H
-

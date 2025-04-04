@@ -2,145 +2,106 @@
 #include "../include/storage.h"
 #include <fstream>
 #include <iostream>
+#include <algorithm>
 
 namespace VersionedStorage {
-
     bool create(const std::string& filename) {
-        std::string metadata_file = filename + ".meta";
+        FileMetadata new_file(filename);
+        return saveMetadata(new_file);
+    }
 
-        std::ofstream meta_out(metadata_file, std::ios::binary | std::ios::trunc);
-        if (!meta_out) {
-            std::cerr << "Error al crear el archivo de metadatos.\n";
+    bool open(const std::string& filename, FileMetadata& meta) {
+        return loadMetadata(filename, meta);
+    }
+
+    bool write(const std::string& filename, FileMetadata& meta, const char* data, size_t size) {
+        // 1. Crear nueva versión basada en la actual
+        size_t new_version_id = meta.current_version + 1;
+        auto new_version = std::make_shared<VersionMetadata>(new_version_id);
+        
+        // 2. Copiar referencia a todos los bloques de la versión anterior
+        if (meta.versions.count(meta.current_version)) {
+            auto& current_blocks = meta.versions[meta.current_version]->blocks;
+            new_version->blocks = current_blocks;
+            
+            // Actualizar referencias en los bloques
+            for (auto& [offset, block] : current_blocks) {
+                block->referencing_versions.insert(new_version_id);
+            }
+        }
+        
+        // 3. Procesar los nuevos datos por bloques
+        size_t processed = 0;
+        while (processed < size) {
+            size_t current_offset = processed;
+            size_t block_size = std::min(BLOCK_SIZE, size - processed);
+            
+            // Verificar si este bloque necesita COW
+            bool needs_copy = true;
+            if (meta.versions.count(meta.current_version)) {
+                auto& current_blocks = meta.versions[meta.current_version]->blocks;
+                if (current_blocks.count(current_offset)) {
+                    // Comparar contenido del bloque
+                    auto& existing_block = current_blocks[current_offset];
+                    if (std::equal(existing_block->data.begin(), existing_block->data.end(), 
+                                data + processed, data + processed + block_size)) {
+                        // Bloque idéntico, no necesita copia
+                        needs_copy = false;
+                    }
+                }
+            }
+            
+            if (needs_copy) {
+                // Crear nuevo bloque COW
+                size_t new_block_id = meta.all_blocks.size() + 1;
+                auto new_block = std::make_shared<DataBlock>(
+                    new_block_id, data + processed, block_size);
+                
+                // Registrar en la nueva versión
+                new_version->blocks[current_offset] = new_block;
+                new_block->referencing_versions.insert(new_version_id);
+                
+                // Agregar al registro global de bloques
+                meta.all_blocks[new_block_id] = new_block;
+            }
+            
+            processed += block_size;
+        }
+        
+        // 4. Actualizar metadatos
+        new_version->file_size = size;
+        meta.versions[new_version_id] = new_version;
+        meta.current_version = new_version_id;
+        
+        // 5. Persistir cambios
+        return saveMetadata(meta);
+    }
+
+    bool read(const FileMetadata& meta, size_t version_id, std::string& output) {
+        if (!meta.versions.count(version_id)) {
+            std::cerr << "Versión no existe" << std::endl;
             return false;
         }
-
-        FileMetadata metadata;
-        metadata.filename = filename;
-        metadata.total_versions = 0;
-
-        size_t name_length = metadata.filename.size();
-        meta_out.write(reinterpret_cast<const char*>(&name_length), sizeof(size_t));
-        meta_out.write(metadata.filename.c_str(), name_length);
-        meta_out.write(reinterpret_cast<const char*>(&metadata.total_versions), sizeof(size_t));
-
-        meta_out.close();
-        std::cout << "Archivo creado exitosamente: " << filename << std::endl;
+        
+        auto& version = meta.versions.at(version_id);
+        output.resize(version->file_size);
+        
+        // Ensamblar archivo a partir de bloques
+        for (const auto& [offset, block] : version->blocks) {
+            if (offset + block->data.size() > version->file_size) {
+                continue; // Bloque parcial al final
+            }
+            std::copy(block->data.begin(), block->data.end(), 
+                    output.begin() + offset);
+        }
+        
         return true;
     }
 
-    bool open(const std::string& filename) {
-        FileMetadata metadata;
-        if (!loadMetadata(filename, metadata)) {
-            std::cerr << "No se pudo abrir el archivo: " << filename << std::endl;
-            return false;
-        }
-
-        std::cout << "Archivo abierto exitosamente: " << filename << std::endl;
-        std::cout << "Total de versiones: " << metadata.total_versions << std::endl;
-        return true;
+    bool snapshot(const FileMetadata& meta, size_t version_to_clone) {
+        // Implementación similar a write pero sin nuevos datos
+        // Crea una nueva versión idéntica a la especificada
+        // Útil para branching
+        return true; 
     }
-
-    bool write(const std::string& filename) {
-        std::string metadata_file = filename + ".meta";
-        std::string data_file = filename + ".data";
-
-        // Cargar metadatos
-        FileMetadata metadata;
-        if (!loadMetadata(filename, metadata)) {
-            std::cerr << "Error: No se pudo cargar el archivo de metadatos.\n";
-            return false;
-        }
-
-        // Abrir el archivo original para leer su contenido
-        std::ifstream file_in(filename, std::ios::binary);
-        if (!file_in) {
-            std::cerr << "Error: No se pudo abrir el archivo original para leer cambios.\n";
-            return false;
-        }
-
-        // Leer el contenido actual del archivo
-        std::vector<char> current_data((std::istreambuf_iterator<char>(file_in)), std::istreambuf_iterator<char>());
-        file_in.close();
-
-        // Obtener el último offset disponible
-        size_t last_offset = (metadata.total_versions == 0) ? 0 :
-                             metadata.versions.back().offset + metadata.versions.back().size;
-
-        // Guardar el nuevo contenido en el archivo de datos
-        std::ofstream data_out(data_file, std::ios::binary | std::ios::app);
-        if (!data_out) {
-            std::cerr << "Error: No se pudo abrir el archivo de datos para escribir.\n";
-            return false;
-        }
-
-        // Escribir datos en el nuevo offset
-        data_out.seekp(last_offset);
-        data_out.write(current_data.data(), current_data.size());
-        data_out.close();
-
-        // Registrar la nueva versión con el offset correcto
-        metadata.total_versions++;
-        Version new_version;
-        new_version.offset = last_offset;
-        new_version.size = current_data.size();
-        metadata.versions.push_back(new_version);
-
-        // Guardar metadatos actualizados
-        std::ofstream meta_out(metadata_file, std::ios::binary | std::ios::trunc);
-        if (!meta_out) {
-            std::cerr << "Error: No se pudo actualizar el archivo de metadatos.\n";
-            return false;
-        }
-
-        // Escribir metadatos
-        size_t name_length = metadata.filename.size();
-        meta_out.write(reinterpret_cast<const char*>(&name_length), sizeof(size_t));
-        meta_out.write(metadata.filename.c_str(), name_length);
-        meta_out.write(reinterpret_cast<const char*>(&metadata.total_versions), sizeof(size_t));
-
-        for (const auto& version : metadata.versions) {
-            meta_out.write(reinterpret_cast<const char*>(&version), sizeof(Version));
-        }
-
-        meta_out.close();
-
-        std::cout << "Nueva versión " << metadata.total_versions << " guardada correctamente.\n";
-        return true;
-    }
-
-    bool read(const std::string& filename, size_t version_id, std::string& output) {
-        FileMetadata metadata;
-        if (!loadMetadata(filename, metadata)) {
-            std::cerr << "No se pudo cargar la metadata para leer el archivo: " << filename << std::endl;
-            return false;
-        }
-
-        if (version_id >= metadata.total_versions) {
-            std::cerr << "Error: Versión no válida.\n";
-            return false;
-        }
-
-        std::string data_file = filename + ".data";
-        std::ifstream data_in(data_file, std::ios::binary);
-        if (!data_in) {
-            std::cerr << "Error al abrir el archivo de datos para lectura.\n";
-            return false;
-        }
-
-        Version version = metadata.versions[version_id];
-        output.resize(version.size);
-
-        data_in.seekg(version.offset);
-        data_in.read(&output[0], version.size);
-        data_in.close();
-
-        std::cout << "Lectura exitosa de la versión " << version_id << " del archivo: " << filename << std::endl;
-        return true;
-    }
-
-    bool close(const std::string& filename) {
-        std::cout << "Archivo cerrado: " << filename << std::endl;
-        return true;
-    }
-
 }

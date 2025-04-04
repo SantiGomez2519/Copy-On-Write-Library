@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++11 -Wall -Iinclude
+CXXFLAGS = -std=c++17 -Wall -Iinclude
 
 SRCS = main.cpp src/file_manager.cpp src/storage.cpp
 OBJS = $(SRCS:.cpp=.o)
