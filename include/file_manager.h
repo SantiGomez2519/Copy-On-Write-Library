@@ -36,6 +36,7 @@ namespace VersionedStorage {
         std::unordered_map<size_t, std::shared_ptr<DataBlock>> all_blocks;
         
         FileMetadata(const std::string& name) : filename(name), current_version(0) {
+            // Versión 0 es vacía/inicial
             versions[0] = std::make_shared<VersionMetadata>(0);
         }
     };

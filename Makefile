@@ -17,6 +17,6 @@ run: $(TARGET)
 	./$(TARGET)                             
 
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -f $(OBJS) $(TARGET) *.meta *.blocks *.data
 
 .PHONY: all run clean

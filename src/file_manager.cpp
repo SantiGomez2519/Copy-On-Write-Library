@@ -7,74 +7,81 @@
 namespace VersionedStorage {
     bool create(const std::string& filename) {
         FileMetadata new_file(filename);
-        return saveMetadata(new_file);
+        return saveMetadata(new_file) && saveBlockData(new_file);
     }
 
     bool open(const std::string& filename, FileMetadata& meta) {
-        return loadMetadata(filename, meta);
+        return loadMetadata(filename, meta) && loadBlockData(filename, meta);
     }
 
     bool write(const std::string& filename, FileMetadata& meta, const char* data, size_t size) {
-        // 1. Crear nueva versión basada en la actual
+        // Crear nueva versión
         size_t new_version_id = meta.current_version + 1;
         auto new_version = std::make_shared<VersionMetadata>(new_version_id);
-        
-        // 2. Copiar referencia a todos los bloques de la versión anterior
+        new_version->file_size = size;
+    
+        // Copiar referencias de bloques no modificados
         if (meta.versions.count(meta.current_version)) {
             auto& current_blocks = meta.versions[meta.current_version]->blocks;
-            new_version->blocks = current_blocks;
             
-            // Actualizar referencias en los bloques
-            for (auto& [offset, block] : current_blocks) {
-                block->referencing_versions.insert(new_version_id);
+            for (const auto& [offset, block] : current_blocks) {
+                // Verificar si el bloque será completamente sobrescrito
+                if (offset >= size) {
+                    // Bloque está después del nuevo tamaño, no lo copiamos
+                    continue;
+                }
+                
+                // Verificar si el contenido del bloque cambió
+                bool block_changed = false;
+                size_t compare_size = std::min(block->data.size(), size - offset);
+                if (!std::equal(block->data.begin(), block->data.begin() + compare_size,
+                              data + offset, data + offset + compare_size)) {
+                    block_changed = true;
+                }
+                
+                if (!block_changed && (offset + block->data.size() <= size)) {
+                    new_version->blocks[offset] = block;
+                    block->referencing_versions.insert(new_version_id);
+                }
             }
         }
-        
-        // 3. Procesar los nuevos datos por bloques
+    
+        // Procesar nuevos datos y bloques modificados
         size_t processed = 0;
         while (processed < size) {
             size_t current_offset = processed;
             size_t block_size = std::min(BLOCK_SIZE, size - processed);
             
-            // Verificar si este bloque necesita COW
-            bool needs_copy = true;
-            if (meta.versions.count(meta.current_version)) {
-                auto& current_blocks = meta.versions[meta.current_version]->blocks;
-                if (current_blocks.count(current_offset)) {
-                    // Comparar contenido del bloque
-                    auto& existing_block = current_blocks[current_offset];
-                    if (std::equal(existing_block->data.begin(), existing_block->data.end(), 
-                                data + processed, data + processed + block_size)) {
-                        // Bloque idéntico, no necesita copia
-                        needs_copy = false;
-                    }
+            // Verificar si ya tenemos un bloque para este offset
+            if (!new_version->blocks.count(current_offset)) {
+                // Generar nuevo ID de bloque
+                size_t new_block_id = 1;
+                if (!meta.all_blocks.empty()) {
+                    auto max_it = std::max_element(meta.all_blocks.begin(), meta.all_blocks.end(),
+                        [](const auto& a, const auto& b) { return a.first < b.first; });
+                    new_block_id = max_it->first + 1;
                 }
-            }
-            
-            if (needs_copy) {
-                // Crear nuevo bloque COW
-                size_t new_block_id = meta.all_blocks.size() + 1;
-                auto new_block = std::make_shared<DataBlock>(
-                    new_block_id, data + processed, block_size);
                 
-                // Registrar en la nueva versión
-                new_version->blocks[current_offset] = new_block;
+                // Crear nuevo bloque COW
+                auto new_block = std::make_shared<DataBlock>(new_block_id, 
+                                                            data + processed, 
+                                                            block_size);
                 new_block->referencing_versions.insert(new_version_id);
                 
-                // Agregar al registro global de bloques
+                new_version->blocks[current_offset] = new_block;
                 meta.all_blocks[new_block_id] = new_block;
             }
             
             processed += block_size;
         }
-        
-        // 4. Actualizar metadatos
-        new_version->file_size = size;
+    
+        // Actualizar metadatos
         meta.versions[new_version_id] = new_version;
         meta.current_version = new_version_id;
-        
-        // 5. Persistir cambios
-        return saveMetadata(meta);
+    
+        // Guardar cambios
+        if (!saveMetadata(meta)) return false;
+        return saveBlockData(meta);
     }
 
     bool read(const FileMetadata& meta, size_t version_id, std::string& output) {
