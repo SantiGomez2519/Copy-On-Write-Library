@@ -1,25 +1,30 @@
-# Ignorar archivos binarios y compilados
+# Archivos de compilación
 *.o
-*.a
 *.out
 *.exe
+*.obj
+*.a
+*.so
+*.dll
+
+# Directorios de compilación
+/build/
+/bin/
+/dist/
+*.dSYM/
+
+# Archivos generados por el sistema
+Thumbs.db
+.DS_Store
+
+# Archivos de metadatos y pruebas
+*.meta
+*.bin
 *.log
+test/
 
-# Ignorar ejecutables generados
-test_functions
-test_versioning
-
-# Ignorar bibliotecas compiladas
-libversioning.a
-
-# Ignorar archivos temporales de editores
-*.swp
-*.swo
-*~
+# Archivos de configuración de editores
 .vscode/
 .idea/
-*.DS_Store
+*.swp
 
-# Ignorar directorios de pruebas y almacenamiento
-storage/
-versions/
