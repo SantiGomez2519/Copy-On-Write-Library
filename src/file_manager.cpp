@@ -66,6 +66,11 @@ namespace VersionedStorage {
         size_t last_offset = (metadata.total_versions == 0) ? 0 :
                              metadata.versions.back().offset + metadata.versions.back().size;
 
+        if (metadata.total_versions == 5) {
+        std::cout << "🕵️ Estado del archivo .data antes del Garbage Collector:\n";
+        VersionedStorage::mostrarEstadoDataFile(filename);
+        }
+
         // Guardar el nuevo contenido en el archivo de datos
         std::ofstream data_out(data_file, std::ios::binary | std::ios::app);
         if (!data_out) {
@@ -105,7 +110,15 @@ namespace VersionedStorage {
         meta_out.close();
 
         std::cout << "Nueva version " << metadata.total_versions << " guardada correctamente.\n";
+
+        // Si el archivo tiene más de 5 versiones, ejecutar el Garbage Collector
+        if (metadata.total_versions > 5) {
+            std::cout << "🗑️ Ejecutando Garbage Collector...\n";
+            garbageCollector(metadata);
+            std::cout << "🗑️ Garbage Collector completado.\n";
+        }
         return true;
+
     }
 
     bool read(const std::string& filename, size_t version_id, std::string& output) {
@@ -143,47 +156,7 @@ namespace VersionedStorage {
         return true;
     }
 
-    void mostrarEstadoDataFile(const std::string& filename) {
-        std::string data_file = filename + ".data";
-        std::string meta_file = filename + ".meta";
     
-        std::ifstream meta_in(meta_file, std::ios::binary);
-        if (!meta_in) {
-            std::cerr << "No se pudo abrir el archivo .meta." << std::endl;
-            return;
-        }
-    
-        // Leer nombre
-        size_t name_length;
-        meta_in.read(reinterpret_cast<char*>(&name_length), sizeof(size_t));
-        std::string name(name_length, '\0');
-        meta_in.read(&name[0], name_length);
-    
-        // Leer total de versiones
-        size_t total_versions;
-        meta_in.read(reinterpret_cast<char*>(&total_versions), sizeof(size_t));
-    
-        std::cout << "\n📦 Estado del archivo de datos (" << data_file << "):\n";
-        std::cout << "Archivo: " << name << "\nTotal de versiones: " << total_versions << std::endl;
-    
-        for (size_t i = 0; i < total_versions; ++i) {
-            Version v;
-            meta_in.read(reinterpret_cast<char*>(&v), sizeof(Version));
-            std::cout << " - Version " << i << ": offset=" << v.offset << ", tamano=" << v.size << " bytes\n";
-        }
-    
-        // Tamaño del archivo .data
-        std::ifstream data_in(data_file, std::ios::binary | std::ios::ate);
-        if (data_in) {
-            size_t filesize = data_in.tellg();
-            std::cout << "Tamano total del archivo .data: " << filesize << " bytes\n";
-            data_in.close();
-        } else {
-            std::cerr << "No se pudo abrir el archivo .data para leer su tamano." << std::endl;
-        }
-    
-        meta_in.close();
-    }
     
 
 }

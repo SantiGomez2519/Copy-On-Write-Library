@@ -13,6 +13,10 @@ namespace VersionedStorage {
 
     // Carga los metadatos de un archivo versionado desde disco
     bool loadMetadata(const std::string& filename, FileMetadata& metadata);
+
+    
+
+    void garbageCollector(FileMetadata& metadata);
 }
 
 #endif // STORAGE_H

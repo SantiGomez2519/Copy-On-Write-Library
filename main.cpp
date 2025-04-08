@@ -24,7 +24,8 @@ int main() {
         "Segunda version con cambios.",
         "Tercera version con mas cambios.",
         "Cuarta version con otro texto.",
-        "Quinta version, final de la prueba."
+        "Quinta version, final de la prueba.",
+        "Sexta version, final de la prueba con GC correjido."
     };
 
     for (size_t i = 0; i < test_data.size(); i++) {
@@ -56,6 +57,7 @@ int main() {
         std::cerr << "Error: Se leyo incorrectamente una version inexistente." << std::endl;
     }
 
+    
     std::cout << "Cerrando el archivo." << std::endl;
     if (!VersionedStorage::close(filename)) {
         std::cerr << "Error: No se pudo cerrar el archivo." << std::endl;
