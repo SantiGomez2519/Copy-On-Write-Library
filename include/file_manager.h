@@ -44,7 +44,9 @@ namespace VersionedStorage {
     bool write(const std::string& filename);
     bool read(const std::string& filename, size_t version_id, std::string& output);
     bool close(const std::string& filename);
+
+    //Nueva función para mostrar el estado del archivo .data
+    void mostrarEstadoDataFile(const std::string& filename);
 }
 
 #endif // FILE_MANAGER_H
-

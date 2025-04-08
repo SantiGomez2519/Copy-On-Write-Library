@@ -20,11 +20,11 @@ int main() {
     std::cout << "Archivo abierto exitosamente: " << filename << std::endl;
 
     std::vector<std::string> test_data = {
-        "Primera versión del archivo.",
-        "Segunda versión con cambios.",
-        "Tercera versión con más cambios.",
-        "Cuarta versión con otro texto.",
-        "Quinta versión, final de la prueba."
+        "Primera version del archivo.",
+        "Segunda version con cambios.",
+        "Tercera version con mas cambios.",
+        "Cuarta version con otro texto.",
+        "Quinta version, final de la prueba."
     };
 
     for (size_t i = 0; i < test_data.size(); i++) {
@@ -32,9 +32,9 @@ int main() {
         file << test_data[i];
         file.close();
 
-        std::cout << "Escribiendo versión " << i << "..." << std::endl;
+        std::cout << "Escribiendo version " << i << "..." << std::endl;
         if (!VersionedStorage::write(filename)) {
-            std::cerr << "Error: No se pudo escribir la versión " << i << "." << std::endl;
+            std::cerr << "Error: No se pudo escribir la version " << i << "." << std::endl;
         }
     }
 
@@ -42,18 +42,18 @@ int main() {
     for (int i = test_data.size() - 1; i >= 0; i--) {
         std::string read_data;
         if (VersionedStorage::read(filename, i, read_data)) {
-            std::cout << "Versión " << i << ": " << read_data << std::endl;
+            std::cout << "Version " << i << ": " << read_data << std::endl;
         } else {
-            std::cerr << "Error: No se pudo leer la versión " << i << "." << std::endl;
+            std::cerr << "Error: No se pudo leer la version " << i << "." << std::endl;
         }
     }
 
-    std::cout << "Intentando leer una versión inválida (99)..." << std::endl;
+    std::cout << "Intentando leer una version invalida (99)..." << std::endl;
     std::string read_data;
     if (!VersionedStorage::read(filename, 99, read_data)) {
-        std::cout << "Correcto: Se detectó que la versión 99 no existe." << std::endl;
+        std::cout << "Correcto: Se detecto que la version 99 no existe." << std::endl;
     } else {
-        std::cerr << "Error: Se leyó incorrectamente una versión inexistente." << std::endl;
+        std::cerr << "Error: Se leyo incorrectamente una version inexistente." << std::endl;
     }
 
     std::cout << "Cerrando el archivo." << std::endl;
@@ -62,6 +62,6 @@ int main() {
         return 1;
     }
     std::cout << "Archivo cerrado correctamente." << std::endl;
-
+    VersionedStorage::mostrarEstadoDataFile(filename);
     return 0;
 }
