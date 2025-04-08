@@ -172,8 +172,40 @@ namespace VersionedStorage {
         std::cout << " Garbage Collector completado. Ahora hay " << metadata.total_versions << " versiones activas.\n";
     }
     
+    bool readLatestVersion(const std::string& filename, std::string& output) {
+        FileMetadata metadata;
+        if (!loadMetadata(filename, metadata)) {
+            std::cerr << "Error: No se pudo cargar el archivo de metadatos.\n";
+            return false;
+        }
     
+        if (metadata.total_versions == 0) {
+            std::cerr << "No hay versiones disponibles para leer.\n";
+            return false;
+        }
     
+        size_t last_version_index = metadata.total_versions - 1;
+        const Version& version = metadata.versions[last_version_index];
+        std::string data_file = filename + ".data";
+    
+        std::ifstream data_in(data_file, std::ios::binary);
+        if (!data_in) {
+            std::cerr << "Error: No se pudo abrir el archivo de datos para lectura.\n";
+            return false;
+        }
+    
+        std::vector<char> buffer(version.size);
+        data_in.seekg(version.offset);
+        data_in.read(buffer.data(), version.size);
+        data_in.close();
+    
+        output.assign(buffer.begin(), buffer.end());
+    
+        std::cout << "Ultima version (" << last_version_index << ") leida correctamente:\nContenido: " << output << "\n";
+        return true;
+    }
+    
+      
 
 }
 

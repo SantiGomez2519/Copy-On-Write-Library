@@ -47,6 +47,11 @@ namespace VersionedStorage {
 
     //Nueva función para mostrar el estado del archivo .data
     void mostrarEstadoDataFile(const std::string& filename);
+
+    // Leer la última versión del archivo
+    bool readLatestVersion(const std::string& filename, std::string& output);
+
+
 }
 
 #endif // FILE_MANAGER_H

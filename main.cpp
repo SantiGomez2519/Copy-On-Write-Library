@@ -57,6 +57,9 @@ int main() {
         std::cerr << "Error: Se leyo incorrectamente una version inexistente." << std::endl;
     }
 
+    std::cout << "\n Leyendo ultima version..." << std::endl;
+    std::string latest;
+    VersionedStorage::readLatestVersion(filename, latest);
     
     std::cout << "Cerrando el archivo." << std::endl;
     if (!VersionedStorage::close(filename)) {
@@ -65,5 +68,7 @@ int main() {
     }
     std::cout << "Archivo cerrado correctamente." << std::endl;
     VersionedStorage::mostrarEstadoDataFile(filename);
+    
+    
     return 0;
 }
