@@ -86,6 +86,14 @@ namespace VersionedStorage {
             Version v;
             meta_in.read(reinterpret_cast<char*>(&v), sizeof(Version));
             std::cout << " - Version " << i << ": offset=" << v.offset << ", tamano=" << v.size << " bytes\n";
+            // Leer contenido de la version
+            std::ifstream data_in(data_file, std::ios::binary);
+            if (data_in) {
+                data_in.seekg(v.offset, std::ios::beg);
+                std::string contenido(v.size, '\0');
+                data_in.read(&contenido[0], v.size);
+                std::cout << "   Contenido: \"" << contenido << "\"\n";
+        }
         }
     
         // Tamaño del archivo .data
@@ -203,6 +211,31 @@ namespace VersionedStorage {
     
         std::cout << "Ultima version (" << last_version_index << ") leida correctamente:\nContenido: " << output << "\n";
         return true;
+    }
+
+    void showMemoryUsage(const std::string& filename) {
+        std::string data_file = filename + ".data";
+        std::string meta_file = filename + ".meta";
+    
+        std::ifstream data_in(data_file, std::ios::binary | std::ios::ate);
+        std::ifstream meta_in(meta_file, std::ios::binary | std::ios::ate);
+    
+        if (!data_in || !meta_in) {
+            std::cerr << "No se pudieron abrir los archivos para leer el uso de memoria.\n";
+            return;
+        }
+    
+        size_t data_size = data_in.tellg();
+        size_t meta_size = meta_in.tellg();
+        size_t total = data_size + meta_size;
+    
+        std::cout << "\n📊 Uso actual de memoria de la biblioteca:\n";
+        std::cout << " - Archivo .data: " << data_size << " bytes\n";
+        std::cout << " - Archivo .meta: " << meta_size << " bytes\n";
+        std::cout << " - Total en disco: " << total << " bytes\n";
+    
+        data_in.close();
+        meta_in.close();
     }
     
       

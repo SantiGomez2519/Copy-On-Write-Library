@@ -51,6 +51,8 @@ namespace VersionedStorage {
     // Leer la última versión del archivo
     bool readLatestVersion(const std::string& filename, std::string& output);
 
+    void showMemoryUsage(const std::string& filename);
+
 
 }
 

@@ -18,7 +18,7 @@ int main() {
         return 1;
     }
     std::cout << "Archivo abierto exitosamente: " << filename << std::endl;
-
+    VersionedStorage::showMemoryUsage(filename);
     std::vector<std::string> test_data = {
         "Primera version del archivo.",
         "Segunda version con cambios.",
@@ -60,6 +60,15 @@ int main() {
     std::cout << "\n Leyendo ultima version..." << std::endl;
     std::string latest;
     VersionedStorage::readLatestVersion(filename, latest);
+
+    std::string recovered;
+    int version_to_recover = 2;
+    
+    if (VersionedStorage::read(filename, version_to_recover, recovered)) {
+        std::cout << "Recuperada version " << version_to_recover << ": " << recovered << "\n";
+    } else {
+        std::cout << "No se pudo recuperar la version " << version_to_recover << "\n";
+    }
     
     std::cout << "Cerrando el archivo." << std::endl;
     if (!VersionedStorage::close(filename)) {
@@ -68,7 +77,6 @@ int main() {
     }
     std::cout << "Archivo cerrado correctamente." << std::endl;
     VersionedStorage::mostrarEstadoDataFile(filename);
-    
-    
+    VersionedStorage::showMemoryUsage(filename);
     return 0;
 }
