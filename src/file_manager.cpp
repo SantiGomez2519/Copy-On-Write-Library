@@ -112,10 +112,10 @@ namespace VersionedStorage {
         std::cout << "Nueva version " << metadata.total_versions << " guardada correctamente.\n";
 
         // Si el archivo tiene más de 5 versiones, ejecutar el Garbage Collector
-        if (metadata.total_versions > 5) {
-            std::cout << "🗑️ Ejecutando Garbage Collector...\n";
+        if (metadata.total_versions > 10) {
+            std::cout << " Ejecutando Garbage Collector...\n";
             garbageCollector(metadata);
-            std::cout << "🗑️ Garbage Collector completado.\n";
+            std::cout << " Garbage Collector completado.\n";
         }
         return true;
 
@@ -153,6 +153,66 @@ namespace VersionedStorage {
 
     bool close(const std::string& filename) {
         std::cout << "Archivo cerrado: " << filename << std::endl;
+        return true;
+    }
+
+    void showFileStatus(const std::string& filename) {
+        std::string data_file = filename + ".data";
+        std::string meta_file = filename + ".meta";
+    
+        std::ifstream meta_in(meta_file, std::ios::binary);
+        if (!meta_in) {
+            std::cerr << "No se pudo abrir el archivo .meta.\n";
+            return;
+        }
+    
+        // Leer nombre
+        size_t name_length;
+        meta_in.read(reinterpret_cast<char*>(&name_length), sizeof(size_t));
+        std::string name(name_length, '\0');
+        meta_in.read(&name[0], name_length);
+    
+        // Leer total de versiones
+        size_t total_versions;
+        meta_in.read(reinterpret_cast<char*>(&total_versions), sizeof(size_t));
+    
+        std::cout << "\n Estado del archivo versionado (" << filename << "):\n";
+        std::cout << "Nombre: " << name << "\n";
+        std::cout << "Total de versiones: " << total_versions << "\n";
+    
+        for (size_t i = 0; i < total_versions; ++i) {
+            Version v;
+            meta_in.read(reinterpret_cast<char*>(&v), sizeof(Version));
+            std::cout << " - Version " << i << ": offset = " << v.offset << ", tamano = " << v.size << " bytes\n";
+        }
+    
+        // Mostrar tamaño total del archivo .data
+        std::ifstream data_in(data_file, std::ios::binary | std::ios::ate);
+        if (data_in) {
+            size_t filesize = data_in.tellg();
+            std::cout << "Tamano total del archivo .data: " << filesize << " bytes\n";
+        }
+    
+        meta_in.close();
+    }
+    
+    bool copyFile(const std::string& src, const std::string& dst) {
+        // Abrimos el archivo fuente en modo binario para lectura
+        std::ifstream in(src, std::ios::binary);
+        // Abrimos el archivo destino en modo binario para escritura
+        std::ofstream out(dst, std::ios::binary);
+    
+        // Verificamos si ambos archivos se abrieron correctamente
+        if (!in || !out) {
+            std::cerr << " Error al copiar el archivo de " << src << " a " << dst << std::endl;
+            return false;
+        }
+    
+        // Copiamos todo el contenido del archivo fuente al archivo destino
+        out << in.rdbuf();
+    
+        // Ambos archivos se cerrarán automáticamente al salir de la función (RAII)
+        std::cout << "Archivo copiado correctamente de " << src << " a " << dst << std::endl;
         return true;
     }
 

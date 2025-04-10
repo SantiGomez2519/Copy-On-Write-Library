@@ -79,7 +79,7 @@ namespace VersionedStorage {
         size_t total_versions;
         meta_in.read(reinterpret_cast<char*>(&total_versions), sizeof(size_t));
     
-        std::cout << "\n📦 Estado del archivo de datos (" << data_file << "):\n";
+        std::cout << "\nEstado del archivo de datos (" << data_file << "):\n";
         std::cout << "Archivo: " << name << "\nTotal de versiones: " << total_versions << std::endl;
     
         for (size_t i = 0; i < total_versions; ++i) {

@@ -45,13 +45,18 @@ namespace VersionedStorage {
     bool read(const std::string& filename, size_t version_id, std::string& output);
     bool close(const std::string& filename);
 
-    //Nueva función para mostrar el estado del archivo .data
+    //Nueva función para mostrar el estado del archivo con contenido .data
     void mostrarEstadoDataFile(const std::string& filename);
+    //igual que la anterior pero sin contenido
+    void showFileStatus(const std::string& filename);
 
     // Leer la última versión del archivo
     bool readLatestVersion(const std::string& filename, std::string& output);
 
     void showMemoryUsage(const std::string& filename);
+
+    // Copia un archivo desde una ruta fuente a una ruta destino
+    bool copyFile(const std::string& src, const std::string& dst);
 
 
 }
