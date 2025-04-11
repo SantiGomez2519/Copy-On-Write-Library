@@ -189,41 +189,29 @@ La implementación de esta biblioteca basada en COW demuestra la viabilidad de m
 - **Integración de conceptos de Sistemas Operativos:**  
   Se aplican técnicas de virtualización de memoria y manejo de archivos binarios, demostrando el aprovechamiento de conceptos vistos en clase.
 
-# 📂 Sistema de Archivos Versionados en C++
-
-Este proyecto implementa un sistema de control de versiones para archivos de texto plano, inspirado en conceptos básicos de Git. Permite crear, editar, leer y gestionar versiones de archivos de forma sencilla.
-
----
-
-## 🧠 ¿Cómo funciona?
-
-- Cada archivo versionado tiene dos archivos asociados:
-  - `.data`: contiene el contenido de todas las versiones
-  - `.meta`: contiene los metadatos como versiones, offsets, tamaños y `user_id`
-
-- Las versiones son gestionadas automáticamente:
-  - Cada `write()` guarda una nueva versión con el `user_id` del autor
-  - Máximo 5 versiones por archivo (las más antiguas se eliminan automáticamente)
-
-- Solo puedes trabajar con **un archivo abierto a la vez**
-
----
-
-## ⚙️ Instrucciones de uso
+## 7. Instrucciones de uso
 
 ### 1. Crear un nuevo archivo versionado
 
+```cpp
 VersionedStorage::create("mi_archivo");
+```
+
 Crea los archivos mi_archivo.meta y mi_archivo.data
 
 ### 2. Abrir un archivo existente
 
+```cpp
 VersionedStorage::open("mi_archivo");
+```
+
 Debes cerrar el archivo actual con close() antes de abrir otro
 
 ### 3. Escribir una nueva versión
 
+```cpp
 VersionedStorage::write("mi_archivo", user_id);
+```
 
 Acciones:
 
@@ -235,36 +223,52 @@ Acciones:
 
 ### 4. Leer la última versión
 
+```cpp
 std::string contenido;
 VersionedStorage::readLatestVersion("mi_archivo", contenido);
+```
 
 ### 5. Leer versión específica
 
+```cpp
 std::string contenido;
 VersionedStorage::read("mi_archivo", version_id, contenido);
+```
+
 version_id comienza en 0 (versión más antigua)
 
 ### 6. Ver estado del archivo
 
+```cpp
 // Solo metadatos
 VersionedStorage::showFileStatus("mi_archivo");
+```
 
+```cpp
 // Con contenido
 VersionedStorage::showFileStatusWithContent("mi_archivo");
+```
 
 ### 7. Uso de memoria
 
+```cpp
 VersionedStorage::showMemoryUsage("mi_archivo");
+```
 
 ### 8. Copiar archivo
 
+```cpp
 VersionedStorage::copyFile("mi_archivo", "mi_copia");
+```
 
-9. Cerrar archivo
+### 9. Cerrar archivo
 
+```cpp
 VersionedStorage::close("mi_archivo");
+```
 
-🚫 Restricciones
+### Restricciones
+
 ✔️ Solo 1 archivo abierto a la vez
 ✔️ Máximo 5 versiones por archivo
 ✔️ Requiere open() antes de write()
@@ -277,10 +281,11 @@ Compilador compatible con STL (g++, clang++, etc.)
 
 Bibliotecas: <filesystem>, <fstream>, <vector>, <map>
   
+## Para archivos binarios o que no sean .txt (por ejemplo imágenes o PDFs)
 
-## Para archivos binarios o que no sean .txt (por ejemplo imágenes o PDFs):
 copyFile también puede utilizarse para inicializar archivos versionados con contenido que no sea texto plano, como imágenes. En este caso, se recomienda utilizar una estructura como la siguiente:
 
+```cpp
   std::string base = "image_test";
   std::string extension = ".jpg";
   std::string filename = base + extension;
@@ -292,5 +297,6 @@ copyFile también puede utilizarse para inicializar archivos versionados con con
   // Primera versión: guardar el contenido de una imagen original
   VersionedStorage::copyFile("img1.jpg", filename); //siendo img1.jpg una imagen dentro de la carpeta donde estemos trabajando
   VersionedStorage::write(filename, 0);
+```
 
 Esto guarda el contenido de img1.jpg dentro del archivo versionado image_test.jpg, lo cual será tratado como una versión binaria dentro del sistema.
