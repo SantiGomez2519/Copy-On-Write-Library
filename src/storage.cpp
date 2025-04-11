@@ -278,8 +278,4 @@ namespace VersionedStorage {
         data_in.close();
         meta_in.close();
     }
-    
-    
-      
-
 }
