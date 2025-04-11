@@ -23,6 +23,7 @@ Thumbs.db
 *.log
 *.jpg
 *.data
+testfile
 
 # Archivos de configuración de editores
 .vscode/
