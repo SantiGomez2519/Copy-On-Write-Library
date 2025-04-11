@@ -1,22 +1,39 @@
+# Directorios
+INCLUDE_DIR = include
+SRC_DIR = src
+BUILD_DIR = build
+LIB_NAME = libcow.a
+
+# Archivos fuente
+SRCS = $(wildcard $(SRC_DIR)/*.cpp)
+OBJS = $(patsubst $(SRC_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(SRCS))
+
+# Comando de compilación
 CXX = g++
-CXXFLAGS = -std=c++11 -Wall -Iinclude
+CXXFLAGS = -std=c++17 -I$(INCLUDE_DIR) -Wall -Wextra
 
-SRCS = main.cpp src/file_manager.cpp src/storage.cpp
-OBJS = $(SRCS:.cpp=.o)
-TARGET = versioning_app
+# Target por defecto
+all: $(LIB_NAME) main
 
-all: $(TARGET)
-
-$(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS)
-
-%.o: %.cpp
+# Compilar objetos
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-run: $(TARGET)
-	./$(TARGET)                             
+# Crear el directorio de build si no existe
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
 
+# Crear librería estática
+$(LIB_NAME): $(OBJS)
+	ar rcs $@ $^
+
+# Compilar ejecutable principal
+main: test/main.cpp $(LIB_NAME)
+	$(CXX) $(CXXFLAGS) test/main.cpp -L. -lcow -o main
+
+# Limpiar archivos generados
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -rf $(BUILD_DIR) *.a main
 
-.PHONY: all run clean
+.PHONY: all clean
+
