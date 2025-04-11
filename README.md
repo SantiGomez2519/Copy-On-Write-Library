@@ -23,7 +23,6 @@ Este documento describe en detalle la solución implementada para el proyecto de
 - [4. Estructuras de Datos](#4-estructuras-de-datos)
 - [5. Desarrollo y Pruebas](#5-desarrollo-y-pruebas)
 - [6. Conclusiones y Consideraciones Finales](#6-conclusiones-y-consideraciones-finales)
-- [7. Recomendaciones para la Presentación](#7-recomendaciones-para-la-presentación)
 
 ---
 
@@ -189,18 +188,4 @@ La implementación de esta biblioteca basada en COW demuestra la viabilidad de m
 
 - **Integración de conceptos de Sistemas Operativos:**  
   Se aplican técnicas de virtualización de memoria y manejo de archivos binarios, demostrando el aprovechamiento de conceptos vistos en clase.
-
----
-
-## 7. Recomendaciones para la Presentación
-
-- **Demostración en vivo:**  
-  Mostrar el flujo completo: creación del archivo, generación de versiones, lectura de versiones específicas y ejecución del Garbage Collector.  
-- **Explicación de la función `write`:**  
-  Detallar cómo se utiliza el offset y cómo se actualiza la metadata para cada nueva versión.  
-- **Visualización del estado de los archivos:**  
-  Presentar la salida de `showFileStatus` y `showMemoryUsage` para evidenciar la gestión de memoria.  
-- **Uso de gráficos o tablas:**  
-  Incluir información sobre el rendimiento en diferentes máquinas, relacionando el tipo de procesador, la cantidad de RAM y el sistema operativo, según lo solicitado en el enunciado.  
-- **Defensa de decisiones de diseño:**  
-  Justificar la elección de estructuras de datos y la implementación del Garbage Collector, haciendo énfasis en cómo se aplican los conceptos de COW y virtualización de memoria vistos en clase.
+  
