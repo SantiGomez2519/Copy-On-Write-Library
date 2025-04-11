@@ -23,6 +23,7 @@ Este documento describe en detalle la solución implementada para el proyecto de
 - [4. Estructuras de Datos](#4-estructuras-de-datos)
 - [5. Desarrollo y Pruebas](#5-desarrollo-y-pruebas)
 - [6. Conclusiones y Consideraciones Finales](#6-conclusiones-y-consideraciones-finales)
+- [7. Instrucciones de uso](#7-instrucciones-de-uso)
 
 ---
 
@@ -197,7 +198,7 @@ La implementación de esta biblioteca basada en COW demuestra la viabilidad de m
 VersionedStorage::create("mi_archivo");
 ```
 
-Crea los archivos mi_archivo.meta y mi_archivo.data
+- Crea los archivos `mi_archivo.meta` y `mi_archivo.data`
 
 ### 2. Abrir un archivo existente
 
@@ -205,7 +206,7 @@ Crea los archivos mi_archivo.meta y mi_archivo.data
 VersionedStorage::open("mi_archivo");
 ```
 
-Debes cerrar el archivo actual con close() antes de abrir otro
+- Debes cerrar el archivo actual con `close()` antes de abrir otro
 
 ### 3. Escribir una nueva versión
 
@@ -213,13 +214,11 @@ Debes cerrar el archivo actual con close() antes de abrir otro
 VersionedStorage::write("mi_archivo", user_id);
 ```
 
-Acciones:
+**Acciones:**
 
-  Guarda el contenido actual como nueva versión
-
-  Asocia el user_id como autor
-
-  Ejecuta GC si hay más de 5 versiones
+- Guarda el contenido actual como nueva versión
+- Asocia el user_id como autor}
+- Ejecuta GC si hay más de 5 versiones
 
 ### 4. Leer la última versión
 
@@ -235,7 +234,7 @@ std::string contenido;
 VersionedStorage::read("mi_archivo", version_id, contenido);
 ```
 
-version_id comienza en 0 (versión más antigua)
+- `version_id` comienza en 0 (versión más antigua)
 
 ### 6. Ver estado del archivo
 
@@ -266,24 +265,10 @@ VersionedStorage::copyFile("mi_archivo", "mi_copia");
 ```cpp
 VersionedStorage::close("mi_archivo");
 ```
-
-### Restricciones
-
-✔️ Solo 1 archivo abierto a la vez
-✔️ Máximo 5 versiones por archivo
-✔️ Requiere open() antes de write()
-✔️ Solo para archivos de texto (.txt)
-
-✅ Requisitos
-C++11 o superior
-
-Compilador compatible con STL (g++, clang++, etc.)
-
-Bibliotecas: <filesystem>, <fstream>, <vector>, <map>
   
 ## Para archivos binarios o que no sean .txt (por ejemplo imágenes o PDFs)
 
-copyFile también puede utilizarse para inicializar archivos versionados con contenido que no sea texto plano, como imágenes. En este caso, se recomienda utilizar una estructura como la siguiente:
+- `copyFile` también puede utilizarse para inicializar archivos versionados con contenido que no sea texto plano, como imágenes. En este caso, se recomienda utilizar una estructura como la siguiente:
 
 ```cpp
   std::string base = "image_test";
@@ -299,4 +284,4 @@ copyFile también puede utilizarse para inicializar archivos versionados con con
   VersionedStorage::write(filename, 0);
 ```
 
-Esto guarda el contenido de img1.jpg dentro del archivo versionado image_test.jpg, lo cual será tratado como una versión binaria dentro del sistema.
+- Esto guarda el contenido de `img1.jpg` dentro del archivo versionado `image_test.jpg`, lo cual será tratado como una versión binaria dentro del sistema.
