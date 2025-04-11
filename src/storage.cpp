@@ -11,19 +11,29 @@ namespace VersionedStorage {
             std::cerr << "Error al guardar la metadata.\n";
             return false;
         }
-
+    
+        // Guardar nombre del archivo
         size_t name_length = metadata.filename.size();
         meta_out.write(reinterpret_cast<const char*>(&name_length), sizeof(size_t));
         meta_out.write(metadata.filename.c_str(), name_length);
+    
+        // Guardar número de versiones
         meta_out.write(reinterpret_cast<const char*>(&metadata.total_versions), sizeof(size_t));
-
+    
+        // Guardar cada versión
         for (const auto& version : metadata.versions) {
-            meta_out.write(reinterpret_cast<const char*>(&version), sizeof(Version));
+            meta_out.write(reinterpret_cast<const char*>(&version.version_id), sizeof(size_t));
+            meta_out.write(reinterpret_cast<const char*>(&version.offset), sizeof(size_t));
+            meta_out.write(reinterpret_cast<const char*>(&version.size), sizeof(size_t));
+    
+            // Guardar user_id como número
+            meta_out.write(reinterpret_cast<const char*>(&version.user_id), sizeof(size_t));
         }
-
+    
         meta_out.close();
         return true;
     }
+    
 
     bool loadMetadata(const std::string& filename, FileMetadata& metadata) {
         std::string metadata_file = filename + ".meta";
@@ -32,34 +42,46 @@ namespace VersionedStorage {
             std::cerr << "Error al abrir la metadata.\n";
             return false;
         }
-
+    
+        // Leer nombre del archivo
         size_t name_length;
         meta_in.read(reinterpret_cast<char*>(&name_length), sizeof(size_t));
-
+    
         if (name_length > 255) {
             std::cerr << "Error: Nombre de archivo corrupto.\n";
             return false;
         }
-
+    
         metadata.filename.resize(name_length);
         meta_in.read(&metadata.filename[0], name_length);
+    
+        // Leer número de versiones
         meta_in.read(reinterpret_cast<char*>(&metadata.total_versions), sizeof(size_t));
-
         if (metadata.total_versions > 1000) {
             std::cerr << "Error: Número de versiones sospechoso.\n";
             return false;
         }
-
-        metadata.versions.resize(metadata.total_versions);
+    
+        // Leer versiones
+        metadata.versions.clear();
         for (size_t i = 0; i < metadata.total_versions; ++i) {
-            meta_in.read(reinterpret_cast<char*>(&metadata.versions[i]), sizeof(Version));
+            Version v;
+            meta_in.read(reinterpret_cast<char*>(&v.version_id), sizeof(size_t));
+            meta_in.read(reinterpret_cast<char*>(&v.offset), sizeof(size_t));
+            meta_in.read(reinterpret_cast<char*>(&v.size), sizeof(size_t));
+    
+            // Leer user_id como número
+            meta_in.read(reinterpret_cast<char*>(&v.user_id), sizeof(size_t));
+    
+            metadata.versions.push_back(v);
         }
-
+    
         meta_in.close();
         return true;
     }
+    
 
-    void mostrarEstadoDataFile(const std::string& filename) {
+    void showFileStatusWithContent(const std::string& filename) {
         std::string data_file = filename + ".data";
         std::string meta_file = filename + ".meta";
     
@@ -69,7 +91,7 @@ namespace VersionedStorage {
             return;
         }
     
-        // Leer nombre
+        // Leer nombre del archivo
         size_t name_length;
         meta_in.read(reinterpret_cast<char*>(&name_length), sizeof(size_t));
         std::string name(name_length, '\0');
@@ -85,18 +107,19 @@ namespace VersionedStorage {
         for (size_t i = 0; i < total_versions; ++i) {
             Version v;
             meta_in.read(reinterpret_cast<char*>(&v), sizeof(Version));
-            std::cout << " - Version " << i << ": offset=" << v.offset << ", tamano=" << v.size << " bytes\n";
-            // Leer contenido de la version
+            std::cout << " - Version " << v.version_id << ": offset=" << v.offset << ", tamano=" << v.size << " bytes\n";
+            std::cout << "   Usuario ID: " << v.user_id << "\n";
+    
             std::ifstream data_in(data_file, std::ios::binary);
             if (data_in) {
                 data_in.seekg(v.offset, std::ios::beg);
                 std::string contenido(v.size, '\0');
                 data_in.read(&contenido[0], v.size);
                 std::cout << "   Contenido: \"" << contenido << "\"\n";
-        }
+            }
         }
     
-        // Tamaño del archivo .data
+        // Tamaño total del archivo .data
         std::ifstream data_in(data_file, std::ios::binary | std::ios::ate);
         if (data_in) {
             size_t filesize = data_in.tellg();
@@ -108,6 +131,7 @@ namespace VersionedStorage {
     
         meta_in.close();
     }
+    
 
     void garbageCollector(FileMetadata& metadata) {
         std::string data_file = metadata.filename + ".data";
@@ -161,6 +185,7 @@ namespace VersionedStorage {
             nueva_version.version_id = nuevas_versions.size();  // Reasignar IDs si lo necesitas
             nueva_version.offset = nuevo_offset;
             nueva_version.size = version.size;
+            nueva_version.user_id = version.user_id;
     
             nuevas_versions.push_back(nueva_version);
         }
@@ -192,8 +217,7 @@ namespace VersionedStorage {
             return false;
         }
     
-        size_t last_version_index = metadata.total_versions - 1;
-        const Version& version = metadata.versions[last_version_index];
+        const Version& version = metadata.versions.back();
         std::string data_file = filename + ".data";
     
         std::ifstream data_in(data_file, std::ios::binary);
@@ -209,9 +233,12 @@ namespace VersionedStorage {
     
         output.assign(buffer.begin(), buffer.end());
     
-        std::cout << "Ultima version (" << last_version_index << ") leida correctamente:\nContenido: " << output << "\n";
+        std::cout << "Ultima version (" << version.version_id << ") leida correctamente:\n";
+        std::cout << "Usuario ID: " << version.user_id << "\nContenido: " << output << "\n";
+    
         return true;
     }
+    
 
     void showMemoryUsage(const std::string& filename) {
         std::string data_file = filename + ".data";
@@ -229,16 +256,30 @@ namespace VersionedStorage {
         size_t meta_size = meta_in.tellg();
         size_t total = data_size + meta_size;
     
-        std::cout << "\n📊 Uso actual de memoria de la biblioteca:\n";
-        std::cout << " - Archivo .data: " << data_size << " bytes\n";
-        std::cout << " - Archivo .meta: " << meta_size << " bytes\n";
-        std::cout << " - Total en disco: " << total << " bytes\n";
+        std::cout << "\nUso actual de memoria de la biblioteca:\n\n";
+    
+        std::cout << "+----------------+----------------------+\n";
+        std::cout << "| Archivo        | Tamano en bytes      |\n";
+        std::cout << "+----------------+----------------------+\n";
+    
+        std::string data_str = std::to_string(data_size);
+        std::string meta_str = std::to_string(meta_size);
+        std::string total_str = std::to_string(total);
+    
+        while (data_str.length() < 20) data_str += ' ';
+        while (meta_str.length() < 20) meta_str += ' ';
+        while (total_str.length() < 20) total_str += ' ';
+    
+        std::cout << "| .data          | " << data_str << "|\n";
+        std::cout << "| .meta          | " << meta_str << "|\n";
+        std::cout << "| TOTAL          | " << total_str << "|\n";
+        std::cout << "+----------------+----------------------+\n";
     
         data_in.close();
         meta_in.close();
     }
     
+    
       
 
 }
-

@@ -9,12 +9,15 @@ struct Version {
     size_t version_id;
     size_t offset;
     size_t size;
+    size_t user_id;   // Nuevo campo: autor del cambio
 
     // Constructor por defecto
-    Version() : version_id(0), offset(0), size(0) {}
+    Version() : version_id(0), offset(0), size(0), user_id(0) {}
 
-    // Constructor para inicializar correctamente
-    Version(size_t id, size_t off, size_t sz) : version_id(id), offset(off), size(sz) {}
+    Version(size_t id, size_t off, size_t sz, size_t user)
+        : version_id(id), offset(off), size(sz), user_id(user) {}
+
+
 };
 
 // Estructura para representar un bloque de datos modificados
@@ -39,14 +42,15 @@ struct FileMetadata {
 
 // Funciones para manejar archivos versionados
 namespace VersionedStorage {
+
     bool create(const std::string& filename);
     bool open(const std::string& filename);
-    bool write(const std::string& filename);
+    bool write(const std::string& filename, size_t user_id); // ← Actualizado
     bool read(const std::string& filename, size_t version_id, std::string& output);
     bool close(const std::string& filename);
 
     //Nueva función para mostrar el estado del archivo con contenido .data
-    void mostrarEstadoDataFile(const std::string& filename);
+    void showFileStatusWithContent(const std::string& filename);
     //igual que la anterior pero sin contenido
     void showFileStatus(const std::string& filename);
 
