@@ -1,6 +1,29 @@
-# Documentación del Proyecto: Biblioteca de Gestión de Archivos Versionados basada en Copy-on-Write (COW)
+# Proyecto: Biblioteca de Gestión de Archivos Versionados basada en Copy-on-Write (COW)
+
+**Autores:**  
+_Juan Esteban Alzate_  
+_Santiago Gómez Ospina_  
+_Mateo Villada_  
 
 Este documento describe en detalle la solución implementada para el proyecto de sistemas operativos, en el que se desarrolla una biblioteca que utiliza la técnica Copy-on-Write (COW) para gestionar versiones de archivos. A continuación se explica la arquitectura, las funcionalidades implementadas, las estructuras de datos utilizadas, el mecanismo de recolección de basura y las conclusiones derivadas.
+
+---
+
+## Contenidos
+
+- [1. Introducción y Objetivos](#1-introducción-y-objetivos)
+- [2. Arquitectura de la Solución](#2-arquitectura-de-la-solución)
+- [3. Descripción de las Funcionalidades Implementadas](#3-descripción-de-las-funcionalidades-implementadas)
+  - [3.1. Creación y Apertura de Archivos Versionados](#31-creación-y-apertura-de-archivos-versionados)
+  - [3.2. Escritura de Cambios y Gestión del Versionado (Copy-on-Write)](#32-escritura-de-cambios-y-gestión-del-versionado-copy-on-write)
+  - [3.3. Lectura de Versiones](#33-lectura-de-versiones)
+  - [3.4. Visualización y Monitoreo](#34-visualización-y-monitoreo)
+  - [3.5. Copia de Archivos](#35-copia-de-archivos)
+  - [3.6. Recolección de Basura (Garbage Collector)](#36-recolección-de-basura-garbage-collector)
+- [4. Estructuras de Datos](#4-estructuras-de-datos)
+- [5. Desarrollo y Pruebas](#5-desarrollo-y-pruebas)
+- [6. Conclusiones y Consideraciones Finales](#6-conclusiones-y-consideraciones-finales)
+- [7. Recomendaciones para la Presentación](#7-recomendaciones-para-la-presentación)
 
 ---
 
