@@ -3,6 +3,8 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
+#include <fstream>
 
 // Estructura para representar una versión del archivo
 struct Version {
