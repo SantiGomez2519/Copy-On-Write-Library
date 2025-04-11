@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -15,23 +16,19 @@ int main() {
 
     // Primera version: guardar img1.jpg
     VersionedStorage::copyFile("img1.jpg", filename);
-    VersionedStorage::write(filename);
+    VersionedStorage::write(filename, 0);
 
     // Segunda version: guardar img2.jpg (sobrescribir)
     VersionedStorage::copyFile("img2.jpg", filename);
-    VersionedStorage::write(filename);
-
+    VersionedStorage::write(filename, 1);
     VersionedStorage::copyFile("img2.jpg", filename);
-    VersionedStorage::write(filename);
-
+    VersionedStorage::write(filename, 1);
     VersionedStorage::copyFile("img2.jpg", filename);
-    VersionedStorage::write(filename);
-
+    VersionedStorage::write(filename, 1);
     VersionedStorage::copyFile("img2.jpg", filename);
-    VersionedStorage::write(filename);
-
+    VersionedStorage::write(filename, 1);
     VersionedStorage::copyFile("img2.jpg", filename);
-    VersionedStorage::write(filename);
+    VersionedStorage::write(filename, 1);
     
 
     // Leer versión 0 y guardar como output_0.jpg
