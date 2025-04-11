@@ -119,6 +119,8 @@ namespace VersionedStorage {
 
             garbageCollector(metadata);
             std::cout << " Garbage Collector completado.\n";
+            std::cout << " \n Estado del archivo .data despues del Garbage Collector:\n";
+            VersionedStorage::showFileStatus(filename);
         }
 
         return true;
