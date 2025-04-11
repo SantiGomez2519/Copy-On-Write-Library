@@ -48,7 +48,7 @@ int main() {
     }
 
     std::string latest;
-    VersionedStorage::readLatestVersion(filename, latest);
+    // VersionedStorage::readLatestVersion(filename, latest);
     VersionedStorage::showFileStatus(filename);
     VersionedStorage::showMemoryUsage(filename);
 
