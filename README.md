@@ -181,7 +181,3 @@ La implementación de esta biblioteca basada en COW demuestra la viabilidad de m
   Incluir información sobre el rendimiento en diferentes máquinas, relacionando el tipo de procesador, la cantidad de RAM y el sistema operativo, según lo solicitado en el enunciado.  
 - **Defensa de decisiones de diseño:**  
   Justificar la elección de estructuras de datos y la implementación del Garbage Collector, haciendo énfasis en cómo se aplican los conceptos de COW y virtualización de memoria vistos en clase.
-
----
-
-Esta documentación resume de manera detallada las soluciones implementadas para cada uno de los retos del proyecto, apoyándose en el código presentado y en los conceptos fundamentales de la técnica Copy-on-Write y la gestión de versiones en sistemas operativos.
