@@ -133,29 +133,34 @@ namespace VersionedStorage {
             std::cerr << "No se pudo cargar la metadata para leer el archivo: " << filename << std::endl;
             return false;
         }
-
+    
         if (version_id >= metadata.total_versions) {
             std::cerr << "Error: Version no valida.\n";
             return false;
         }
-
+    
+        Version version = metadata.versions[version_id];
         std::string data_file = filename + ".data";
         std::ifstream data_in(data_file, std::ios::binary);
         if (!data_in) {
             std::cerr << "Error al abrir el archivo de datos para lectura.\n";
             return false;
         }
-
-        Version version = metadata.versions[version_id];
-        output.resize(version.size);
-
+    
+        std::vector<char> buffer(version.size);
         data_in.seekg(version.offset);
-        data_in.read(&output[0], version.size);
+        data_in.read(buffer.data(), version.size);
         data_in.close();
-
-        std::cout << "Lectura exitosa de la version " << version_id << " del archivo: " << filename << std::endl;
+    
+        output.assign(buffer.begin(), buffer.end());
+    
+        std::cout << "Version (" << version.version_id << ") leida correctamente del archivo: " << filename << "\n";
+        std::cout << "Usuario ID: " << version.user_id << "\n";
+        std::cout << "Contenido: " << output << "\n";
+    
         return true;
     }
+    
 
     bool close(const std::string& filename) {
         std::cout << "Archivo cerrado: " << filename << std::endl;

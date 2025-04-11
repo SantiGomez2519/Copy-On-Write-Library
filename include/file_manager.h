@@ -47,6 +47,7 @@ namespace VersionedStorage {
     bool open(const std::string& filename);
     bool write(const std::string& filename, size_t user_id); // ← Actualizado
     bool read(const std::string& filename, size_t version_id, std::string& output);
+    bool readSpecificVersion(const std::string& filename, size_t version_id, std::string& output);
     bool close(const std::string& filename);
 
     //Nueva función para mostrar el estado del archivo con contenido .data

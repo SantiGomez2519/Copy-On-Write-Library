@@ -36,49 +36,46 @@ namespace VersionedStorage {
     
 
     bool loadMetadata(const std::string& filename, FileMetadata& metadata) {
-        std::string metadata_file = filename + ".meta";
-        std::ifstream meta_in(metadata_file, std::ios::binary);
-        if (!meta_in) {
-            std::cerr << "Error al abrir la metadata.\n";
-            return false;
-        }
-    
-        // Leer nombre del archivo
-        size_t name_length;
-        meta_in.read(reinterpret_cast<char*>(&name_length), sizeof(size_t));
-    
-        if (name_length > 255) {
-            std::cerr << "Error: Nombre de archivo corrupto.\n";
-            return false;
-        }
-    
-        metadata.filename.resize(name_length);
-        meta_in.read(&metadata.filename[0], name_length);
-    
-        // Leer número de versiones
-        meta_in.read(reinterpret_cast<char*>(&metadata.total_versions), sizeof(size_t));
-        if (metadata.total_versions > 1000) {
-            std::cerr << "Error: Número de versiones sospechoso.\n";
-            return false;
-        }
-    
-        // Leer versiones
-        metadata.versions.clear();
-        for (size_t i = 0; i < metadata.total_versions; ++i) {
-            Version v;
-            meta_in.read(reinterpret_cast<char*>(&v.version_id), sizeof(size_t));
-            meta_in.read(reinterpret_cast<char*>(&v.offset), sizeof(size_t));
-            meta_in.read(reinterpret_cast<char*>(&v.size), sizeof(size_t));
-    
-            // Leer user_id como número
-            meta_in.read(reinterpret_cast<char*>(&v.user_id), sizeof(size_t));
-    
-            metadata.versions.push_back(v);
-        }
-    
-        meta_in.close();
-        return true;
+    std::string metadata_file = filename + ".meta";
+    std::ifstream meta_in(metadata_file, std::ios::binary);
+    if (!meta_in) {
+        std::cerr << "Error al abrir la metadata.\n";
+        return false;
     }
+
+    size_t name_length;
+    if (!meta_in.read(reinterpret_cast<char*>(&name_length), sizeof(size_t)) || name_length > 255) {
+        std::cerr << "Error: Longitud de nombre corrupta o inválida.\n";
+        return false;
+    }
+
+    metadata.filename.resize(name_length);
+    if (!meta_in.read(&metadata.filename[0], name_length)) {
+        std::cerr << "Error leyendo el nombre del archivo.\n";
+        return false;
+    }
+
+    if (!meta_in.read(reinterpret_cast<char*>(&metadata.total_versions), sizeof(size_t)) || metadata.total_versions > 1000) {
+        std::cerr << "Error: Número de versiones corrupto o inválido.\n";
+        return false;
+    }
+
+    metadata.versions.clear();
+    for (size_t i = 0; i < metadata.total_versions; ++i) {
+        Version v;
+        if (!meta_in.read(reinterpret_cast<char*>(&v.version_id), sizeof(size_t)) ||
+            !meta_in.read(reinterpret_cast<char*>(&v.offset), sizeof(size_t)) ||
+            !meta_in.read(reinterpret_cast<char*>(&v.size), sizeof(size_t)) ||
+            !meta_in.read(reinterpret_cast<char*>(&v.user_id), sizeof(size_t))) {
+            std::cerr << "Error leyendo los datos de la versión " << i << ".\n";
+            return false;
+        }
+        metadata.versions.push_back(v);
+    }
+
+    meta_in.close();
+    return true;
+}
     
 
     void showFileStatusWithContent(const std::string& filename) {
@@ -204,6 +201,7 @@ namespace VersionedStorage {
     
         std::cout << " Garbage Collector completado. Ahora hay " << metadata.total_versions << " versiones activas.\n";
     }
+    
     
     bool readLatestVersion(const std::string& filename, std::string& output) {
         FileMetadata metadata;
