@@ -28,8 +28,8 @@ $(LIB_NAME): $(OBJS)
 	ar rcs $@ $^
 
 # Compilar ejecutable principal
-main: test/main.cpp $(LIB_NAME)
-	$(CXX) $(CXXFLAGS) test/main.cpp -L. -lcow -o main
+main: main.cpp $(LIB_NAME)
+	$(CXX) $(CXXFLAGS) main.cpp -L. -lcow -o main
 
 # Limpiar archivos generados
 clean:
