@@ -21,7 +21,8 @@ Thumbs.db
 *.meta
 *.bin
 *.log
-test/
+*.jpg
+*.data
 
 # Archivos de configuración de editores
 .vscode/
