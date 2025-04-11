@@ -2,7 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include "./include/file_manager.h"
+#include "file_manager.h"
 
 
 int main() {
