@@ -63,9 +63,9 @@ La solución se estructura en varios módulos, distribuidos en distintos archivo
     - `loadMetadata`: Carga la metadata desde disco.
     - `garbageCollector`: Implementa la recolección de basura, eliminando la versión más antigua y reasignando offsets en el archivo de datos para optimizar el uso del espacio.
 
-- **main.cpp:**  
+- **test_image.cpp / test_file.cpp:**  
   - Demuestra el uso de la biblioteca.  
-  - Se crean archivos versionados a partir de copias de imágenes, se generan múltiples versiones a través de sucesivas operaciones de escritura, y se leen versiones específicas para generar archivos de salida.
+  - Se crean archivos versionados a partir de copias de imágenes y archivos, se generan múltiples versiones a través de sucesivas operaciones de escritura, y se leen versiones específicas para generar archivos de salida.
   - Se invocan funciones de monitoreo que muestran el estado del archivo y el uso de memoria.
 
 ---
@@ -155,7 +155,7 @@ La solución se estructura en varios módulos, distribuidos en distintos archivo
 
 ## 5. Desarrollo y Pruebas
 
-El archivo **main.cpp** demuestra el uso de la biblioteca:
+Los archivos **test_file.cpp y test_image.cpp** demuestran el uso de la biblioteca, en el caso de **test_image**:
 
 1. **Creación y Apertura:**
    - Se crea el archivo versionado y se abre para confirmar la carga de metadatos.
